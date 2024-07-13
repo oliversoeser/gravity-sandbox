@@ -52,8 +52,8 @@ var Particle = (function () {
     };
     Particle.prototype.gravitationalForce = function (other) {
         var r_vec = other.posval().sub(this.pos);
-        var r = r_vec.size();
-        return r_vec.mul(G * this.mass * other.massval() / (Math.pow(r, 3) + 1));
+        var r = Math.max(r_vec.size(), massToRadius(this.mass) + massToRadius(other.massval()));
+        return r_vec.mul(G * this.mass * other.massval() / (Math.pow(r, 3)));
     };
     return Particle;
 }());
@@ -94,7 +94,7 @@ var Renderer = (function () {
         var mass = pobject.massval();
         this.context.strokeStyle = "#ffffff";
         this.context.beginPath();
-        this.context.arc(pos.xval(), pos.yval(), Math.sqrt(mass), 0, 2 * PI);
+        this.context.arc(pos.xval(), pos.yval(), massToRadius(mass), 0, 2 * PI);
         this.context.stroke();
     };
     return Renderer;
@@ -125,8 +125,9 @@ var UserInput = (function () {
             mouse.down = false;
             mouse.releasepos = new Vector(event.x, event.y);
             mouse.releasetime = Date.now();
-            var vel = mouse.releasepos.sub(mouse.clickpos).mul(1 / 10);
-            _this.physics.createParticle(mouse.clickpos, vel, mouse.releasetime - mouse.clicktime);
+            var vel = mouse.releasepos.sub(mouse.clickpos).mul(1 / 5);
+            var mass = (mouse.releasetime - mouse.clicktime);
+            _this.physics.createParticle(mouse.clickpos, vel, mass);
         });
     }
     return UserInput;
@@ -134,11 +135,12 @@ var UserInput = (function () {
 var SECOND = 1000;
 var FPS = 60;
 var dt = 1 / FPS;
-var G = 10;
+var G = 5 * Math.pow(10, 2);
 var PI = Math.PI;
 var ZERO_VEC = new Vector(0, 0);
 var pobject_array = new Array();
 var mouse = new Mouse();
+function massToRadius(m) { return Math.sqrt(m); }
 window.onload = function () {
     new UserInput();
 };

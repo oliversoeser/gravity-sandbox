@@ -106,8 +106,8 @@ class Particle implements PObject {
     // Calculate gravity between two objects
     gravitationalForce(other: PObject): Vector {
         let r_vec = other.posval().sub(this.pos);
-        let r = r_vec.size();
-        return r_vec.mul(G*this.mass*other.massval()/(r**3+1));
+        let r = Math.max(r_vec.size(), massToRadius(this.mass)+massToRadius(other.massval()));
+        return r_vec.mul(G*this.mass*other.massval()/(r**3));
     }
 }
 
@@ -168,7 +168,7 @@ class Renderer {
         this.context.strokeStyle = "#ffffff";
         
         this.context.beginPath();
-        this.context.arc(pos.xval(), pos.yval(), Math.sqrt(mass), 0, 2*PI);
+        this.context.arc(pos.xval(), pos.yval(), massToRadius(mass), 0, 2*PI);
         this.context.stroke();
     }
 }
@@ -207,9 +207,10 @@ class UserInput {
             mouse.releasepos = new Vector(event.x, event.y);
             mouse.releasetime = Date.now();
 
-            let vel = mouse.releasepos.sub(mouse.clickpos).mul(1/10);
+            let vel = mouse.releasepos.sub(mouse.clickpos).mul(1/5);
+            let mass = (mouse.releasetime-mouse.clicktime)
 
-            this.physics.createParticle(mouse.clickpos, vel, mouse.releasetime-mouse.clicktime);
+            this.physics.createParticle(mouse.clickpos, vel, mass);
         });
     }
 }
@@ -220,7 +221,7 @@ const FPS = 60;
 
 // Physical constants
 const dt = 1/FPS;
-const G = 10;
+const G = 5*10**2;
 
 // Mathematical constants
 const PI = Math.PI;
@@ -229,6 +230,9 @@ const ZERO_VEC = new Vector(0, 0);
 // Global objects
 let pobject_array: PObject[] = new Array();
 let mouse = new Mouse();
+
+// Drawing
+function massToRadius(m: number) { return Math.sqrt(m); }
 
 // Start app
 window.onload = () => {
