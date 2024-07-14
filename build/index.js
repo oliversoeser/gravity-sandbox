@@ -73,7 +73,7 @@ var Renderer = (function () {
         var _this = this;
         this.fitCanvasToWindow();
         this.drawBackground();
-        var step_size = 50;
+        var step_size = 30;
         for (var i = 0; i < this.canvas.width; i += step_size) {
             var _loop_1 = function (j) {
                 var x = i + step_size / 2;
