@@ -73,6 +73,25 @@ var Renderer = (function () {
         var _this = this;
         this.fitCanvasToWindow();
         this.drawBackground();
+        var step_size = 50;
+        for (var i = 0; i < this.canvas.width; i += step_size) {
+            var _loop_1 = function (j) {
+                var x = i + step_size / 2;
+                var y = j + step_size / 2;
+                var force = ZERO_VEC;
+                pobject_array.forEach(function (pobject) {
+                    var r_vec = pobject.posval().sub(new Vector(x, y));
+                    var r = r_vec.size();
+                    force = force.add(r_vec.mul(G * pobject.massval() / (Math.pow(r, 3))));
+                });
+                this_1.context.fillStyle = "rgb(".concat(force.size() * 2 / 3, ", 0, ").concat(force.size(), ")");
+                this_1.context.fillRect(i, j, step_size, step_size);
+            };
+            var this_1 = this;
+            for (var j = 0; j < this.canvas.height; j += step_size) {
+                _loop_1(j);
+            }
+        }
         pobject_array.forEach(function (pobject) {
             pobject.step();
             _this.drawPObject(pobject);
@@ -93,9 +112,12 @@ var Renderer = (function () {
         var pos = pobject.posval();
         var mass = pobject.massval();
         this.context.strokeStyle = "#ffffff";
+        this.context.fillStyle = "#1f1f1f";
         this.context.beginPath();
         this.context.arc(pos.xval(), pos.yval(), massToRadius(mass), 0, 2 * PI);
+        this.context.fill();
         this.context.stroke();
+        this.context.fillStyle = "#ffffff";
     };
     return Renderer;
 }());

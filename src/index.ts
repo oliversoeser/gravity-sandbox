@@ -38,7 +38,7 @@ class Vector {
 
     // Vector Magnitude
     size(): number {
-        return Math.sqrt(this.x**2 + this.y**2);
+        return Math.sqrt(this.x ** 2 + this.y ** 2);
     }
 }
 
@@ -87,7 +87,7 @@ class Particle implements PObject {
         });
 
         // Update velocity and position
-        let acc = this.current_force.mul(1/this.mass);
+        let acc = this.current_force.mul(1 / this.mass);
         this.vel = this.vel.add(acc.mul(dt));
         this.pos = this.pos.add(this.vel.mul(dt));
 
@@ -106,8 +106,8 @@ class Particle implements PObject {
     // Calculate gravity between two objects
     gravitationalForce(other: PObject): Vector {
         let r_vec = other.posval().sub(this.pos);
-        let r = Math.max(r_vec.size(), massToRadius(this.mass)+massToRadius(other.massval()));
-        return r_vec.mul(G*this.mass*other.massval()/(r**3));
+        let r = Math.max(r_vec.size(), massToRadius(this.mass) + massToRadius(other.massval()));
+        return r_vec.mul(G * this.mass * other.massval() / (r ** 3));
     }
 }
 
@@ -126,7 +126,7 @@ class Renderer {
         this.drawBackground();
 
         // Set frame update function
-        setInterval(this.step.bind(this), SECOND/FPS);
+        setInterval(this.step.bind(this), SECOND / FPS);
     }
 
     // Event listeners in 
@@ -139,6 +139,23 @@ class Renderer {
         this.fitCanvasToWindow()
         this.drawBackground();
 
+        let step_size = 30;
+
+        for (let i = 0; i < this.canvas.width; i += step_size) {
+            for (let j = 0; j < this.canvas.height; j += step_size) {
+                let x = i + step_size/2;
+                let y = j + step_size/2;
+                let force = ZERO_VEC;
+                pobject_array.forEach(pobject => {
+                    let r_vec = pobject.posval().sub(new Vector(x, y));
+                    let r = r_vec.size();
+                    force = force.add(r_vec.mul(G * pobject.massval() / (r ** 3)));
+                });
+                this.context.fillStyle = `rgb(${force.size()*2/3}, 0, ${force.size()})`
+                this.context.fillRect(i, j, step_size, step_size);
+            }
+        }
+
         // Update and draw PObjects
         pobject_array.forEach(pobject => {
             pobject.step();
@@ -147,7 +164,7 @@ class Renderer {
 
         // Draw Particle being created
         if (mouse.down) {
-            this.drawPObject(new Particle(mouse.clickpos, ZERO_VEC, Date.now()-mouse.clicktime));
+            this.drawPObject(new Particle(mouse.clickpos, ZERO_VEC, Date.now() - mouse.clicktime));
         }
     }
 
@@ -166,10 +183,13 @@ class Renderer {
         let mass = pobject.massval();
 
         this.context.strokeStyle = "#ffffff";
-        
+        this.context.fillStyle = "#1f1f1f";
+
         this.context.beginPath();
-        this.context.arc(pos.xval(), pos.yval(), massToRadius(mass), 0, 2*PI);
+        this.context.arc(pos.xval(), pos.yval(), massToRadius(mass), 0, 2 * PI);
+        this.context.fill();
         this.context.stroke();
+        this.context.fillStyle = "#ffffff";
     }
 }
 
@@ -197,18 +217,18 @@ class UserInput {
             mouse.clickpos = new Vector(event.x, event.y);
             mouse.clicktime = Date.now();
         });
-    
+
         this.physics.renderer.addListener("mousemove", event => {
             mouse.pos = new Vector(event.x, event.y);
         });
-    
+
         this.physics.renderer.addListener("mouseup", event => {
             mouse.down = false;
             mouse.releasepos = new Vector(event.x, event.y);
             mouse.releasetime = Date.now();
 
-            let vel = mouse.releasepos.sub(mouse.clickpos).mul(1/5);
-            let mass = (mouse.releasetime-mouse.clicktime)
+            let vel = mouse.releasepos.sub(mouse.clickpos).mul(1 / 5);
+            let mass = (mouse.releasetime - mouse.clicktime)
 
             this.physics.createParticle(mouse.clickpos, vel, mass);
         });
@@ -220,8 +240,8 @@ const SECOND = 1000;
 const FPS = 60;
 
 // Physical constants
-const dt = 1/FPS;
-const G = 5*10**2;
+const dt = 1 / FPS;
+const G = 5 * 10 ** 2;
 
 // Mathematical constants
 const PI = Math.PI;
